@@ -37,7 +37,7 @@ const createSubscribable = <T>() => {
  **/
 export function createStore<T, S>(
   initialValue: T,
-  actions?: { [key in keyof S]: (t: T) => T } 
+  actions?: { [key in keyof S]: (t: T, ...rest: any[]) => T } 
 ) {
   const subscribable = createSubscribable<T>();
 
@@ -50,13 +50,13 @@ export function createStore<T, S>(
       subscribable.publish(value);
     }, [value]);
 
-    const boundActions: { [key in keyof S]: () => void } = {} as { [key in keyof S]: () => void };
+    const boundActions: { [key in keyof S]: (...args: any[]) => void } = {} as { [key in keyof S]: (...args: any[]) => void };
 
     if (actions) {
       for (const actionName in actions) {
-        boundActions[actionName] = () => {
+        boundActions[actionName] = (...args: any[]) => {
           setValue((prevState) => {
-            const newState = actions[actionName](prevState);
+            const newState = actions[actionName](prevState, ...args);
             return newState; // Important: Return the new state!
           });
         };
