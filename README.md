@@ -5,13 +5,13 @@ This package provides a simple and lightweight way to manage state in your React
 ## Installation
 
 ```bash
-npm install elegant-store  # Replace with your actual package name
+npm install elegant-store
 ```
 
 ## Usage
 
-````ts
-import { createStore } from 'elegant-store';
+```ts
+import { createStore } from "elegant-store";
 
 // Define your store with an initial value and optional actions
 const useCounterStore = createStore(0, {
@@ -36,8 +36,8 @@ function Counter() {
   );
 }
 
-export default Counter;```
-
+export default Counter;
+```
 
 # API
 
@@ -58,14 +58,18 @@ TypeScript
 import { Dispatch, SetStateAction } from "react";
 
 export type Action<T> = Dispatch<SetStateAction<T>>;
-Key Features
-Simple and Lightweight: Easy to integrate into any React project.
-Type-Safe: Uses generics for type safety, ensuring that your state and actions are correctly typed.
-Centralized State Management: Provides a central place to manage your application's state.
-Action Creators: Encourages a clean and organized way to update state using action creators.
-Publish/Subscribe Pattern: Efficiently updates components whenever the state changes.
-Flexibility: You can use the provided actions or use setValue directly for updates.
-Example with More Complex State
+
+# Key Features
+
+- Simple and Lightweight: Easy to integrate into any React project.
+- Type-Safe: Uses generics for type safety, ensuring that your state and actions are correctly typed.
+- Centralized State Management: Provides a central place to manage your application's state.
+- Action Creators: Encourages a clean and organized way to update state using action creators.
+- Publish/Subscribe Pattern: Efficiently updates components whenever the state changes.
+- Flexibility: You can use the provided actions or use setValue directly for updates.
+
+# Example with More Complex State
+
 TypeScript
 
 ```ts
@@ -74,9 +78,15 @@ interface User {
   age: number;
 }
 
-const useUserStore = createStore<User, { updateName: (user: User, newName: string) => User }>({ name: "Alice", age: 30 }, {
-  updateName: (user, newName) => ({ ...user, name: newName }),
-});
+const useUserStore = createStore<
+  User,
+  { updateName: (user: User, newName: string) => User }
+>(
+  { name: "Alice", age: 30 },
+  {
+    updateName: (user, newName) => ({ ...user, name: newName }),
+  }
+);
 
 function UserProfile() {
   const [user, setUser, actions] = useUserStore();
@@ -85,20 +95,18 @@ function UserProfile() {
     <div>
       <p>Name: {user.name}</p>
       <p>Age: {user.age}</p>
-      <button onClick={() => actions.updateName(user, "Bob")}>Update Name</button>
+      <button onClick={() => actions.updateName(user, "Bob")}>
+        Update Name
+      </button>
       {/* Direct state update: */}
       <button onClick={() => setUser({ ...user, age: 35 })}>Update Age</button>
     </div>
   );
 }
-````
+```
 
 Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
 
 License
 MIT
-
-```
-
-```
