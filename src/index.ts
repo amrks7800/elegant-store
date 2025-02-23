@@ -20,7 +20,7 @@ const createSubscribable = <T>() => {
   };
 };
 
-/** 
+/**
  * Creates a store with initial value and optional actions.
  * The store is a combination of a state, an updater function, and bound action creators.
  * The state is managed using React's useState hook, and the updater function is used to update the state.
@@ -35,9 +35,9 @@ const createSubscribable = <T>() => {
  *
  * @returns A function that returns an array containing the current state, the updater function, and the bound action creators.
  **/
-export function createStore<T, S>(
+export function createStore<T, S extends { [key: string]: (t: T, ...args: any[]) => T }>(
   initialValue: T,
-  actions?: { [key in keyof S]: (t: T, ...rest: any[]) => T } 
+  actions?: S
 ) {
   const subscribable = createSubscribable<T>();
 
@@ -50,19 +50,25 @@ export function createStore<T, S>(
       subscribable.publish(value);
     }, [value]);
 
-    const boundActions: { [key in keyof S]: (...args: any[]) => void } = {} as { [key in keyof S]: (...args: any[]) => void };
+    type BoundActions = {
+      [K in keyof S]: S[K] extends (t: T, ...args: infer P) => T
+        ? (...args: P) => void
+        : never;
+    };
+
+    const boundActions = {} as BoundActions;
 
     if (actions) {
       for (const actionName in actions) {
-        boundActions[actionName] = (...args: any[]) => {
+        boundActions[actionName] = ((...args: any[]) => {
           setValue((prevState) => {
             const newState = actions[actionName](prevState, ...args);
-            return newState; // Important: Return the new state!
+            return newState;
           });
-        };
+        }) as BoundActions[typeof actionName];
       }
     }
 
-    return [value, setValue, boundActions] as [T, Action<T>, typeof boundActions];
+    return [value, setValue, boundActions] as [T, Action<T>, BoundActions];
   };
-};
+}

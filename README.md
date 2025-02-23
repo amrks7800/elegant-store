@@ -41,23 +41,24 @@ export default Counter;
 
 # API
 
-createStore<T, S>(initialValue: T, actions?: { [key in keyof S]: (t: T) => T })
+## `createStore<T, S>(initialValue: T, actions?: { [key in keyof S]: (t: T) => T })`
+
 Creates a new store.
 
-initialValue: T: The initial value of the store. T represents the type of the initial value.
-actions?: { [key in keyof S]: (t: T) => T }: An optional object containing action creators. Each action creator is a function that takes the current state (t: T) and returns a new state. S represents the type of the actions object.
-Returns a function that, when called within a React component, returns a tuple:
+**Parameters:**
 
-[value: T, setValue: Action<T>, boundActions: { [key in keyof S]: () => void }]:
-value: T: The current value of the state.
-setValue: Action<T>: The standard React setState function for directly updating the state. This can be used to bypass the defined actions if needed.
-boundActions: { [key in keyof S]: () => void } : An object containing the bound action creators. Each bound action is a function that, when called, will update the state using the corresponding action creator. These bound actions close over the internal setValue function.
-Type Definitions
-TypeScript
+- `initialValue: T`: The initial value of the store. `T` represents the type of the initial value.
+- `actions?: { [key in keyof S]: (t: T) => T }`: An optional object containing action creators. Each action creator is a function that takes the current state (`t: T`) and returns a new state. `S` represents the type of the actions object.
 
-import { Dispatch, SetStateAction } from "react";
+**Returns:**
 
-export type Action<T> = Dispatch<SetStateAction<T>>;
+A function that, when called within a React component, returns a tuple:
+
+`[value: T, setValue: Action<T>, boundActions: { [key in keyof S]: () => void }]`
+
+- `value: T`: The current value of the state.
+- `setValue: Action<T>`: The standard React `setState` function for directly updating the state. This can be used to bypass the defined actions if needed.
+- `boundActions: { [key in keyof S]: () => void }`: An object containing the bound action creators. Each bound action is a function that, when called, will update the state using the corresponding action creator. These bound actions close over the internal `setValue` function.
 
 # Key Features
 
