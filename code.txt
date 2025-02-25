@@ -67,7 +67,7 @@ export function createStore<
           subscribable.unsubscribe(listener as Action<T>);
         });
       };
-    }, []);
+    }, [listeners]);
 
     type BoundActions = {
       [K in keyof S]: S[K] extends (t: T, ...args: infer P) => T
