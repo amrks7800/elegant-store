@@ -1,6 +1,8 @@
-# React State Management with `Elegant-store`
+# React State Management with `elegant-store`
 
-This package provides a simple and lightweight way to manage state in your React applications using a custom `createStore` function. It combines the simplicity of `useState` with a publish/subscribe pattern for efficient updates and provides a clean way to define and use actions to modify your state.
+An elegant, zero-dependency, highly performant state management solution for React. 
+
+`elegant-store` combines the simplicity of React hooks with an efficient publish/subscribe pattern. In version 2, we've upgraded the core engine to leverage React 18's `useSyncExternalStore` for concurrent rendering safety and introduced powerful new features like selectors, async actions, and external state access.
 
 ## Installation
 
@@ -35,98 +37,83 @@ function Counter() {
     </div>
   );
 }
-
-export default Counter;
 ```
 
-# API
+## Features & Upgrades
 
-## `createStore<T, S>(initialValue: T, actions?: { [key in keyof S]: (t: T) => T }, listeners?: ((t: T) => T)[])`
+### Performance & Safety (React 18)
+The library now uses `useSyncExternalStore` under the hood. This eliminates tearing during concurrent rendering and ensures that your components always see the most up-to-date state, even if they mount after a state change.
+
+### Selectors (Preventing Re-renders)
+If your state is a large object, you can pass a selector function to the hook to only re-render when a specific part of the state changes.
+
+```ts
+const useUserStore = createStore({ name: "Alice", age: 30 });
+
+function UserProfile() {
+  // Component will only re-render if `name` changes. Changes to `age` are ignored.
+  const [name, setUser] = useUserStore((state) => state.name);
+
+  return <div>Name: {name}</div>;
+}
+```
+
+### Async Actions Support
+Actions can now be asynchronous! Just return a Promise, and the state will be updated when the Promise resolves.
+
+```ts
+const useAuthStore = createStore({ user: null }, {
+  login: async (state, credentials) => {
+    const user = await api.login(credentials);
+    return { ...state, user };
+  }
+});
+```
+
+### Accessing State Outside of React Components
+You can now read, update, or subscribe to the state outside of React components—perfect for utility files, API callers, or Router guards.
+
+```ts
+const useTokenStore = createStore({ token: null });
+
+// Outside React
+const currentToken = useTokenStore.getState().token;
+useTokenStore.setState({ token: "new_token" });
+useTokenStore.actions.myAction();
+useTokenStore.subscribe((newState) => console.log(newState));
+```
+
+## API
+
+### `createStore<T, S>(initialValue: T, actions?: S, listeners?: ((t: T) => void)[])`
 
 Creates a new store.
 
 **Parameters:**
-
-- `initialValue: T`: The initial value of the store. `T` represents the type of the initial value.
-- `actions?: { [key in keyof S]: (t: T) => T }`: An optional object containing action creators. Each action creator is a function that takes the current state (`t: T`) and returns a new state. `S` represents the type of the actions object.
-- `actions?: { [key in keyof S]: (t: T) => T }`: An optional object containing action creators. Each action creator is a function that takes the current state (`t: T`) and returns a new state. `S` represents the type of the actions object.
-- `listeners?: ((t: T) => T)[]`: An optional array of callbacks that will be called with the new state value whenever the state changes.
-
-```ts
-const useUserStore = createStore(
-  { name: "amr" },
-  // actions,
-  [
-    (state) => {
-      // logs the new state to console
-      console.log(state);
-    },
-  ]
-);
-```
-
-> **Important:** listeners are currently unstable.
-> Please use them carefully as they may cause multiple executions, currently
-> they are intended to be loggers only.
+- `initialValue: T`: The initial value of the store.
+- `actions?: S`: An optional object containing action creators. Each action creator takes the current state and returns a new state (or a Promise resolving to a new state).
+- `listeners?: ((t: T) => void)[]`: An optional array of callbacks called with the new state value whenever the state changes.
 
 **Returns:**
+A hybrid hook and store object:
 
-A function that, when called within a React component, returns a tuple:
+When used as a hook:
+`useStore(selector?)` returns `[selectedValue, setValue, boundActions]`
 
-`[value: T, setValue: Action<T>, boundActions?: { [key in keyof S]: () => void }`
+When used as an object:
+- `useStore.getState()`: Returns current state.
+- `useStore.setState(newState)`: Updates current state.
+- `useStore.actions`: Your bound actions.
+- `useStore.subscribe(listener)`: Subscribe to state changes.
 
-- `value: T`: The current value of the state.
-- `setValue: Action<T>`: The standard React `setState` function for directly updating the state. This can be used to bypass the defined actions if needed.
-- `boundActions: { [key in keyof S]: () => void }`: An object containing the bound action creators. Each bound action is a function that, when called, will update the state using the corresponding action creator. These bound actions close over the internal `setValue` function.
+## AI Agent Instructions
+Are you using an AI assistant like Cursor, Claude, or GitHub Copilot? We've created a dedicated markdown file specifically optimized for AI consumption. Feed `docs/llms.md` to your agent to ensure it generates perfect `elegant-store` code with selectors, async actions, and outside-React state access.
 
-# Key Features
+## Bundling
+This package uses [bunchee](https://github.com/huozhi/bunchee) to automatically build standard ESM/CJS bundles. The main entry point handles strict zero-config TypeScript compilation.
 
-- Simple and Lightweight: Easy to integrate into any React project.
-- Type-Safe: Uses generics for type safety, ensuring that your state and actions are correctly typed.
-- Centralized State Management: Provides a central place to manage your application's state.
-- Action Creators: Encourages a clean and organized way to update state using action creators.
-- Publish/Subscribe Pattern: Efficiently updates components whenever the state changes.
-- Flexibility: You can use the provided actions or use setValue directly for updates.
-
-# Example with More Complex State
-
-TypeScript
-
-```ts
-interface User {
-  name: string;
-  age: number;
-}
-
-const useUserStore = createStore<
-  User,
-  { updateName: (user: User, newName: string) => User }
->(
-  { name: "Alice", age: 30 },
-  {
-    updateName: (user, newName) => ({ ...user, name: newName }),
-  }
-);
-
-function UserProfile() {
-  const [user, setUser, actions] = useUserStore();
-
-  return (
-    <div>
-      <p>Name: {user.name}</p>
-      <p>Age: {user.age}</p>
-      <button onClick={() => actions.updateName(user, "Bob")}>
-        Update Name
-      </button>
-      {/* Direct state update: */}
-      <button onClick={() => setUser({ ...user, age: 35 })}>Update Age</button>
-    </div>
-  );
-}
-```
-
-Contributing
+## Contributing
 Contributions are welcome! Please open an issue or submit a pull request.
 
-License
+## License
 MIT
