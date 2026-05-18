@@ -33,14 +33,14 @@ function printBanner() {
   ];
   
   console.clear();
-  console.log(`${PURPLE}┌────────────────────────────────────────────────────────┐${RESET}`);
+  console.log(`${PURPLE}â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”${RESET}`);
   logo.forEach(line => {
     // Each line has a printed width of 48. Pad to 52 to center it in the 56-width border.
     const padded = line.padEnd(52, " ");
-    console.log(`${PURPLE}│${WHITE}  ${padded}  ${PURPLE}│${RESET}`);
+    console.log(`${PURPLE}â”‚${WHITE}  ${padded}  ${PURPLE}â”‚${RESET}`);
   });
-  console.log(`${PURPLE}│${CYAN}         ✨ Premium State Management Initializer ✨         ${PURPLE}│${RESET}`);
-  console.log(`${PURPLE}└────────────────────────────────────────────────────────┘${RESET}\n`);
+  console.log(`${PURPLE}â”‚${CYAN}         âœ¨ Premium State Management Initializer âœ¨         ${PURPLE}â”‚${RESET}`);
+  console.log(`${PURPLE}â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜${RESET}\n`);
 }
 
 // Detect the workspace package manager
@@ -76,12 +76,12 @@ async function selectMenu(title, options) {
     
     options.forEach((opt, idx) => {
       if (idx === selectedIndex) {
-        stdout.write(`    ${CYAN}➔ ${WHITE}${opt}${RESET}\n`);
+        stdout.write(`    ${CYAN}âž” ${WHITE}${opt}${RESET}\n`);
       } else {
         stdout.write(`      ${GREY}${opt}${RESET}\n`);
       }
     });
-    stdout.write(`\n   ${DARK_GREY}Use ↑/↓ arrows to navigate, Enter to select.${RESET}\n`);
+    stdout.write(`\n   ${DARK_GREY}Use â†‘/â†“ arrows to navigate, Enter to select.${RESET}\n`);
   };
 
   const clearLines = (count) => {
@@ -134,7 +134,7 @@ async function selectMenu(title, options) {
 async function setupAndInstall() {
   printBanner();
   const pm = detectPackageManager();
-  console.log(`   ${WHITE}📦 Detected Workspace Package Manager:${RESET} ${GREEN}${pm}${RESET}\n`);
+  console.log(`   ${WHITE}ðŸ“¦ Detected Workspace Package Manager:${RESET} ${GREEN}${pm}${RESET}\n`);
 
   let installCmd = "";
   switch (pm) {
@@ -145,17 +145,37 @@ async function setupAndInstall() {
   }
 
   try {
-    console.log(`   ${CYAN}⚡ Installing elegant-store dependency in the current project...${RESET}`);
+    console.log(`   ${CYAN}âš¡ Installing elegant-store dependency in the current project...${RESET}`);
     console.log(`   ${GREY}> ${installCmd}${RESET}\n`);
     execSync(installCmd, { stdio: "inherit" });
     
-    // Write demo counter store in current workspace
+    // Check if TypeScript project
+    const isTS = fs.existsSync(path.join(process.cwd(), "tsconfig.json")) ||
+                 (fs.existsSync(path.join(process.cwd(), "package.json")) && 
+                  fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8").includes("typescript"));
+
+    const extension = isTS ? "ts" : "js";
     const hasSrc = fs.existsSync(path.join(process.cwd(), "src"));
-    const storePath = hasSrc 
-      ? path.join(process.cwd(), "src", "store.js")
-      : path.join(process.cwd(), "store.js");
+    const relativeStorePath = hasSrc ? `src/store.${extension}` : `store.${extension}`;
+    const storePath = path.join(process.cwd(), relativeStorePath);
       
-    const storeContent = `import { createStore } from "elegant-store";
+    let storeContent = "";
+    if (isTS) {
+      storeContent = `import { createStore } from "elegant-store";
+
+// Initialize your Elegant Store with automatic type inference
+export const counterStore = createStore(
+  { count: 0 },
+  {
+    increment: (state) => ({ count: state.count + 1 }),
+    decrement: (state) => ({ count: state.count - 1 }),
+    reset: () => ({ count: 0 }),
+    set: (state, val: number) => ({ count: val }),
+  }
+);
+`;
+    } else {
+      storeContent = `import { createStore } from "elegant-store";
 
 // Initialize your Elegant Store
 export const counterStore = createStore(
@@ -168,22 +188,22 @@ export const counterStore = createStore(
   }
 );
 `;
+    }
 
     fs.writeFileSync(storePath, storeContent);
-    const relativeStorePath = hasSrc ? "src/store.js" : "store.js";
 
-    console.log(`\n   ${GREEN}✔ Package elegant-store installed successfully!${RESET}`);
-    console.log(`   ${GREEN}✔ Created demo store at:${RESET} ${CYAN}./${relativeStorePath}${RESET}\n`);
+    console.log(`\n   ${GREEN}âœ” Package elegant-store installed successfully!${RESET}`);
+    console.log(`   ${GREEN}âœ” Created type-safe demo store at:${RESET} ${CYAN}./${relativeStorePath}${RESET}\n`);
 
-    console.log(`   ${WHITE}🚀 How to use this store in React:${RESET}`);
+    console.log(`   ${WHITE}ðŸš€ How to use this store in React:${RESET}`);
     console.log(`     ${GOLD}1. Import the store hook and your new store:${RESET}`);
     console.log(`        ${GREY}import { useStore } from "elegant-store";${RESET}`);
-    console.log(`        ${GREY}import { counterStore } from "./${relativeStorePath.replace("src/", "")}";${RESET}\n`);
+    console.log(`        ${GREY}import { counterStore } from "./${relativeStorePath.replace("src/", "").replace(".ts", "").replace(".js", "")}";${RESET}\n`);
     console.log(`     ${GOLD}2. Bind it inside your React component:${RESET}`);
     console.log(`        ${GREY}const [state, actions] = useStore(counterStore);${RESET}\n`);
     console.log(`     ${GOLD}3. Render state and trigger actions:${RESET}`);
     console.log(`        ${GREY}<button onClick={actions.increment}>Count: {state.count}</button>${RESET}\n`);
-    console.log(`   ${GREEN}✨ You're all set! Start building elegant state machines! ✨${RESET}\n`);
+    console.log(`   ${GREEN}âœ¨ You're all set! Start building elegant state machines! âœ¨${RESET}\n`);
 
     // Pause to let user read
     console.log(`   ${GREY}Press any key to return to the main menu...${RESET}`);
@@ -196,7 +216,7 @@ export const counterStore = createStore(
       });
     });
   } catch (error) {
-    console.log(`\n   ${RED}✖ Failed to run installer: ${error.message}${RESET}\n`);
+    console.log(`\n   ${RED}âœ– Failed to run installer: ${error.message}${RESET}\n`);
     
     // Pause to let user read error
     console.log(`   ${GREY}Press any key to return to the main menu...${RESET}`);
@@ -245,13 +265,13 @@ function runLocalDemo() {
     let out = "";
     
     // 1. Header
-    out += `${PURPLE}┌${"─".repeat(width - 2)}┐${RESET}\n`;
-    out += `${PURPLE}│${WHITE}        ✨  ELEGANT STORE - INTERACTIVE LIVE DASHBOARD  ✨        ${PURPLE}│${RESET}\n`;
-    out += `${PURPLE}└${"─".repeat(width - 2)}┘${RESET}\n\n`;
+    out += `${PURPLE}â”Œ${"â”€".repeat(width - 2)}â”${RESET}\n`;
+    out += `${PURPLE}â”‚${WHITE}        âœ¨  ELEGANT STORE - INTERACTIVE LIVE DASHBOARD  âœ¨        ${PURPLE}â”‚${RESET}\n`;
+    out += `${PURPLE}â””${"â”€".repeat(width - 2)}â”˜${RESET}\n\n`;
 
     // 2. Counter Status
     out += `   ${WHITE}STORE STATE STATUS:${RESET}\n`;
-    out += `   ${GREY}Current Count:${RESET}  ${GREEN}${state.count >= 0 ? "▲" : "▼"} ${state.count}${RESET}\n`;
+    out += `   ${GREY}Current Count:${RESET}  ${GREEN}${state.count >= 0 ? "â–²" : "â–¼"} ${state.count}${RESET}\n`;
     
     // 3. Progress bar
     const barWidth = 30;
@@ -259,17 +279,17 @@ function runLocalDemo() {
     const percentage = Math.min(Math.max((state.count + maxVal) / (maxVal * 2), 0), 1);
     const filled = Math.round(barWidth * percentage);
     const empty = barWidth - filled;
-    const bar = `${GREEN}${"█".repeat(filled)}${DARK_GREY}${"░".repeat(empty)}`;
+    const bar = `${GREEN}${"â–ˆ".repeat(filled)}${DARK_GREY}${"â–‘".repeat(empty)}`;
     out += `   ${GREY}Range [-20,20]:${RESET} [${bar}${RESET}] (${Math.round(percentage * 100)}%)\n\n`;
 
     // 4. Remote Execution Server Info
     out += `   ${WHITE}REMOTE EXECUTION SERVER:${RESET}\n`;
-    out += `   ${GREY}Status:${RESET}      ${GREEN}● Online${RESET} on ${CYAN}http://localhost:${PORT}${RESET}\n`;
+    out += `   ${GREY}Status:${RESET}      ${GREEN}â— Online${RESET} on ${CYAN}http://localhost:${PORT}${RESET}\n`;
     out += `   ${GREY}API Endpoints (cURL / Browser):${RESET}\n`;
-    out += `     ${MAGENTA}▸ GET /increment${RESET}  ${DARK_GREY}→  Increments count${RESET}\n`;
-    out += `     ${MAGENTA}▸ GET /decrement${RESET}  ${DARK_GREY}→  Decrements count${RESET}\n`;
-    out += `     ${MAGENTA}▸ GET /set?val=N ${RESET}  ${DARK_GREY}→  Sets count to N${RESET}\n`;
-    out += `     ${MAGENTA}▸ GET /reset     ${RESET}  ${DARK_GREY}→  Resets count${RESET}\n\n`;
+    out += `     ${MAGENTA}â–¸ GET /increment${RESET}  ${DARK_GREY}â†’  Increments count${RESET}\n`;
+    out += `     ${MAGENTA}â–¸ GET /decrement${RESET}  ${DARK_GREY}â†’  Decrements count${RESET}\n`;
+    out += `     ${MAGENTA}â–¸ GET /set?val=N ${RESET}  ${DARK_GREY}â†’  Sets count to N${RESET}\n`;
+    out += `     ${MAGENTA}â–¸ GET /reset     ${RESET}  ${DARK_GREY}â†’  Resets count${RESET}\n\n`;
 
     // 5. Action History
     out += `   ${WHITE}LIVE LOGS & ACTION HISTORY:${RESET}\n`;
@@ -283,9 +303,9 @@ function runLocalDemo() {
     out += `\n`;
 
     // 6. Keyboard Footer
-    out += `${PURPLE}┌${"─".repeat(width - 2)}┐${RESET}\n`;
-    out += `${PURPLE}│${WHITE}  [Space/+] Inc   [-] Dec   [R] Reset   [Q] Quit & Stop Server  ${PURPLE}│${RESET}\n`;
-    out += `${PURPLE}└${"─".repeat(width - 2)}┘${RESET}\n`;
+    out += `${PURPLE}â”Œ${"â”€".repeat(width - 2)}â”${RESET}\n`;
+    out += `${PURPLE}â”‚${WHITE}  [Space/+] Inc   [-] Dec   [R] Reset   [Q] Quit & Stop Server  ${PURPLE}â”‚${RESET}\n`;
+    out += `${PURPLE}â””${"â”€".repeat(width - 2)}â”˜${RESET}\n`;
 
     stdout.write(out);
   }
@@ -390,7 +410,7 @@ async function mainLoop() {
       break; // Exit mainLoop and let runLocalDemo handle CLI flow
     } else {
       console.clear();
-      console.log(`\n   ${GREEN}Thank you for using Elegant Store! Have a fantastic coding session! 🚀${RESET}\n`);
+      console.log(`\n   ${GREEN}Thank you for using Elegant Store! Have a fantastic coding session! ðŸš€${RESET}\n`);
       process.exit(0);
     }
   }
