@@ -43,7 +43,7 @@ const createSubscribable = <T>() => {
 export function createStore<
   T,
   S extends { [key: string]: (t: T, ...args: any[]) => T | Promise<T> },
-  L extends ((t: T) => void)[]
+  L extends ((t: T) => void)[],
 >(initialValue: T, actions?: S, listeners?: L) {
   const subscribable = createSubscribable<T>();
   let currentValue = initialValue;
@@ -51,7 +51,8 @@ export function createStore<
   const getState = () => currentValue;
 
   const setState = (newValue: T | ((prev: T) => T)) => {
-    const nextValue = newValue instanceof Function ? (newValue as any)(currentValue) : newValue;
+    const nextValue =
+      newValue instanceof Function ? newValue(currentValue) : newValue;
     if (!Object.is(currentValue, nextValue)) {
       currentValue = nextValue;
       subscribable.publish(currentValue);
@@ -84,19 +85,21 @@ export function createStore<
 
   // Hook definition supporting optional selectors
   function useStore(): { state: T; setState: Action<T> } & BoundActions;
-  function useStore<R>(selector: (state: T) => R): { state: R; setState: Action<T> } & BoundActions;
+  function useStore<R>(
+    selector: (state: T) => R,
+  ): { state: R; setState: Action<T> } & BoundActions;
   function useStore<R>(selector?: (state: T) => R) {
     const state = useSyncExternalStore(
-      subscribable.subscribe as any,
+      subscribable.subscribe,
       getState,
-      getState
+      getState,
     );
     const selectedState = selector ? selector(state) : state;
     return {
       state: selectedState,
       setState,
       ...boundActions,
-    } as any;
+    };
   }
 
   useStore.getState = getState;
