@@ -1,6 +1,6 @@
 {
   "name": "elegant-store",
-  "version": "3.2.3",
+  "version": "3.2.4",
   "files": [
     "dist",
     "bin/elegant-store.js"
