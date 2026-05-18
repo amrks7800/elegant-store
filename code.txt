@@ -1,16 +1,16 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useSyncExternalStore } from "react";
 
 export type Action<T> = Dispatch<SetStateAction<T>>;
 
 const createSubscribable = <T>() => {
-  const subscribers = new Set<Action<T>>();
+  const subscribers = new Set<(value: T) => void>();
 
-  const subscribe = (fn: Action<T>) => {
+  const subscribe = (fn: (value: T) => void) => {
     subscribers.add(fn);
     return () => subscribers.delete(fn);
   };
 
-  const unsubscribe = (fn: Action<T>) => {
+  const unsubscribe = (fn: (value: T) => void) => {
     subscribers.delete(fn);
   };
 
@@ -28,7 +28,7 @@ const createSubscribable = <T>() => {
 /**
  * Creates a store with initial value and optional actions.
  * The store is a combination of a state, an updater function, and bound action creators.
- * The state is managed using React's useState hook, and the updater function is used to update the state.
+ * The state is managed using React's useSyncExternalStore hook for optimal performance.
  * Bound action creators are created from the provided actions, and they update the state using the updater function.
  * The store also uses a subscribable pattern to notify subscribers whenever the state changes.
  *
@@ -36,58 +36,76 @@ const createSubscribable = <T>() => {
  * @template S - The type of the actions object.
  *
  * @param initialValue - The initial value of the store.
- * @param actions - An optional object containing action creators. Each action creator is a function that takes the current state and returns a new state.
+ * @param actions - An optional object containing action creators. Each action creator takes the current state and returns a new state or a Promise.
  *
- * @returns A function that returns an array containing the current state, the updater function, and the bound action creators.
+ * @returns A hook function that returns an object containing the current state, the updater function, and the destructured bound action creators.
  **/
 export function createStore<
   T,
-  S extends { [key: string]: (t: T, ...args: any[]) => T },
-  L extends ((t: T) => T)[]
+  S extends { [key: string]: (t: T, ...args: any[]) => T | Promise<T> },
+  L extends ((t: T) => void)[],
 >(initialValue: T, actions?: S, listeners?: L) {
   const subscribable = createSubscribable<T>();
+  let currentValue = initialValue;
 
-  return () => {
-    const [value, setValue] = useState(initialValue);
+  const getState = () => currentValue;
 
-    useEffect(() => subscribable.subscribe(setValue) as () => void, []);
-
-    useEffect(() => {
-      subscribable.publish(value);
-    }, [value]);
-
-    useEffect(() => {
-      if (!listeners) return;
-      listeners.forEach((listener) => {
-        subscribable.subscribe(listener as Action<T>);
-      });
-
-      return () => {
-        listeners.forEach((listener) => {
-          subscribable.unsubscribe(listener as Action<T>);
-        });
-      };
-    }, [listeners]);
-
-    type BoundActions = {
-      [K in keyof S]: S[K] extends (t: T, ...args: infer P) => T
-        ? (...args: P) => void
-        : never;
-    };
-
-    const boundActions = {} as BoundActions;
-
-    if (actions) {
-      for (const actionName in actions) {
-        boundActions[actionName] = ((...args: any[]) => {
-          setValue((prevState) => {
-            const newState = actions[actionName](prevState, ...args);
-            return newState;
-          });
-        }) as BoundActions[typeof actionName];
+  const setState = (newValue: T | ((prev: T) => T)) => {
+    const nextValue =
+      newValue instanceof Function ? newValue(currentValue) : newValue;
+    if (!Object.is(currentValue, nextValue)) {
+      currentValue = nextValue;
+      subscribable.publish(currentValue);
+      if (listeners) {
+        listeners.forEach((listener) => listener(currentValue));
       }
     }
-
-    return [value, setValue, boundActions] as [T, Action<T>, BoundActions];
   };
+
+  type BoundActions = {
+    [K in keyof S]: S[K] extends (t: T, ...args: infer P) => infer R
+      ? (...args: P) => R extends Promise<any> ? Promise<void> : void
+      : never;
+  };
+
+  const boundActions = {} as BoundActions;
+
+  if (actions) {
+    for (const actionName in actions) {
+      boundActions[actionName] = ((...args: any[]) => {
+        const result = actions[actionName](getState(), ...args);
+        if (result instanceof Promise) {
+          return result.then(setState);
+        } else {
+          setState(result);
+        }
+      }) as BoundActions[typeof actionName];
+    }
+  }
+
+  // Hook definition supporting optional selectors
+  function useStore(): { state: T; setState: Action<T> } & BoundActions;
+  function useStore<R>(
+    selector: (state: T) => R,
+  ): { state: R; setState: Action<T> } & BoundActions;
+  function useStore<R>(selector?: (state: T) => R) {
+    const state = useSyncExternalStore(
+      subscribable.subscribe,
+      getState,
+      getState,
+    );
+    const selectedState = selector ? selector(state) : state;
+    return {
+      state: selectedState,
+      setState,
+      ...boundActions,
+    };
+  }
+
+  useStore.getState = getState;
+  useStore.setState = setState;
+  useStore.actions = boundActions;
+  useStore.subscribe = subscribable.subscribe;
+
+  return useStore;
 }

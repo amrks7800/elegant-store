@@ -14,7 +14,8 @@
   },
   "scripts": {
     "build": "bunchee",
-    "dev": "bunchee -w"
+    "dev": "bunchee -w",
+    "generate-code-txt": "tsx ./bin/generate-code-txt.ts"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,10 @@
   "devDependencies": {
     "@types/react": "^19.0.10",
     "bunchee": "^6.10.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "tsx": "^4.11.2"
+  },
+  "dependencies": {
+    "@types/node": "^25.8.0"
   }
 }
