@@ -38,7 +38,7 @@ const createSubscribable = <T>() => {
  * @param initialValue - The initial value of the store.
  * @param actions - An optional object containing action creators. Each action creator takes the current state and returns a new state or a Promise.
  *
- * @returns A hook function that returns an array containing the current state, the updater function, and the bound action creators.
+ * @returns A hook function that returns an object containing the current state, the updater function, and the destructured bound action creators.
  **/
 export function createStore<
   T,
@@ -83,8 +83,8 @@ export function createStore<
   }
 
   // Hook definition supporting optional selectors
-  function useStore(): [T, Action<T>, BoundActions];
-  function useStore<R>(selector: (state: T) => R): [R, Action<T>, BoundActions];
+  function useStore(): { state: T; setState: Action<T> } & BoundActions;
+  function useStore<R>(selector: (state: T) => R): { state: R; setState: Action<T> } & BoundActions;
   function useStore<R>(selector?: (state: T) => R) {
     const state = useSyncExternalStore(
       subscribable.subscribe as any,
@@ -92,7 +92,11 @@ export function createStore<
       getState
     );
     const selectedState = selector ? selector(state) : state;
-    return [selectedState, setState, boundActions] as any;
+    return {
+      state: selectedState,
+      setState,
+      ...boundActions,
+    } as any;
   }
 
   useStore.getState = getState;

@@ -62,15 +62,10 @@ Always prefer using **selectors** when dealing with objects to prevent unnecessa
 
 ```tsx
 // ❌ BAD: Returns the whole state, causing re-renders when ANY property changes
-const [state, setState, actions] = useAuthStore(); 
+const { state, setState, ...actions } = useAuthStore(); 
 
-// ✅ GOOD: Use a selector for specific properties
-const user = useAuthStore((state) => state.user);
-
-// Note: When using a selector, the hook only returns the selected value. 
-// If you need actions or setState, get them from the store object:
-const { login, logout } = useAuthStore.actions;
-const setAuthState = useAuthStore.setState;
+// ✅ GOOD: Use a selector for specific properties and destructure the state / actions
+const { state: user, login, logout } = useAuthStore((state) => state.user);
 ```
 
 ### C. Accessing State Outside of React Components
@@ -92,7 +87,7 @@ export const fetchWithAuth = async (url: string) => {
 
 ## 4. Important Gotchas & Rules for AI Agents
 
-1. **Selector Return Value:** When a user passes a selector (`useStore((s) => s.name)`), the hook returns **only the selected value**, NOT the `[state, setState, actions]` tuple.
+1. **Selector Return Value:** When a user passes a selector (`useStore((s) => s.name)`), the hook returns the object `{ state: selectedValue, setState, ...boundActions }`. Destructure the `state` field (and any actions/setState) as needed.
 2. **Intermediate Async States:** If a user asks for an async action that needs to update state *multiple times* (e.g., `loading: true`, then fetch, then `loading: false`), advise them to use `store.setState` instead of returning a Promise from the action, because the action's Promise only updates the state *once* upon resolution.
 3. **Immutability:** State updates behave similarly to React's `setState`. Return new objects/arrays to trigger updates. The library uses `Object.is()` for equality checks. Do not mutate state directly.
 4. **Listeners:** Do not use `listeners` to mutate state. They are strictly typed to return `void` and should be used for side effects like analytics, local storage persistence, or logging.

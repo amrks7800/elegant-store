@@ -23,14 +23,14 @@ const useCounterStore = createStore(0, {
 });
 
 function Counter() {
-  const [count, setCount, actions] = useCounterStore();
+  const { state: count, setState: setCount, increment, decrement, reset } = useCounterStore();
 
   return (
     <div>
       <p>Count: {count}</p>
-      <button onClick={actions.increment}>Increment</button>
-      <button onClick={actions.decrement}>Decrement</button>
-      <button onClick={actions.reset}>Reset</button>
+      <button onClick={increment}>Increment</button>
+      <button onClick={decrement}>Decrement</button>
+      <button onClick={reset}>Reset</button>
 
       {/* You can still use setCount directly if needed: */}
       <button onClick={() => setCount(10)}>Set to 10</button>
@@ -52,7 +52,7 @@ const useUserStore = createStore({ name: "Alice", age: 30 });
 
 function UserProfile() {
   // Component will only re-render if `name` changes. Changes to `age` are ignored.
-  const [name, setUser] = useUserStore((state) => state.name);
+  const { state: name } = useUserStore((state) => state.name);
 
   return <div>Name: {name}</div>;
 }
@@ -98,7 +98,7 @@ Creates a new store.
 A hybrid hook and store object:
 
 When used as a hook:
-`useStore(selector?)` returns `[selectedValue, setValue, boundActions]`
+`useStore(selector?)` returns `{ state: selectedValue, setState: setValue, ...boundActions }`
 
 When used as an object:
 - `useStore.getState()`: Returns current state.
