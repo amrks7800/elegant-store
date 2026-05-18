@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-/// <reference types="node" />
 
 import fs from "fs";
 import http from "http";
 import path from "path";
 import readline from "readline";
-import { createStore } from "../index.js";
+import { createStore } from "../dist/index.js";
 
 // Colors and Styling Tokens
 const PURPLE = "\x1b[38;5;99m";
@@ -36,7 +35,7 @@ function printBanner() {
 }
 
 // Detect the workspace package manager
-function detectPackageManager(): "npm" | "pnpm" | "yarn" | "bun" {
+function detectPackageManager() {
   const userAgent = process.env.npm_config_user_agent || "";
   if (userAgent.includes("pnpm")) return "pnpm";
   if (userAgent.includes("yarn")) return "yarn";
@@ -57,7 +56,7 @@ function detectPackageManager(): "npm" | "pnpm" | "yarn" | "bun" {
 }
 
 // Interactive Keyboard Navigation Menu
-async function selectMenu(title: string, options: string[]): Promise<number> {
+async function selectMenu(title, options) {
   let selectedIndex = 0;
   const stdout = process.stdout;
 
@@ -76,7 +75,7 @@ async function selectMenu(title: string, options: string[]): Promise<number> {
     stdout.write(`\n   ${DARK_GREY}Use ↑/↓ arrows to navigate, Enter to select.${RESET}\n`);
   };
 
-  const clearLines = (count: number) => {
+  const clearLines = (count) => {
     for (let i = 0; i < count; i++) {
       readline.moveCursor(stdout, 0, -1);
       readline.clearLine(stdout, 0);
@@ -85,8 +84,8 @@ async function selectMenu(title: string, options: string[]): Promise<number> {
 
   render();
 
-  return new Promise<number>((resolve) => {
-    const handleKeypress = (_str: string, key: any) => {
+  return new Promise((resolve) => {
+    const handleKeypress = (_str, key) => {
       if (key && key.ctrl && key.name === "c") {
         stdout.write("\x1b[?25h"); // Show cursor
         process.exit(0);
@@ -123,7 +122,7 @@ async function selectMenu(title: string, options: string[]): Promise<number> {
 }
 
 // Generate the fully featured TUI code as a template string
-function getTuiTemplate(pkgImport: string): string {
+function getTuiTemplate(pkgImport) {
   return `import http from "http";
 import readline from "readline";
 import { createStore } from "${pkgImport}";
@@ -388,7 +387,7 @@ This project demonstrates the reactive elegant-store using a gorgeous interactiv
     
     // Pause to let user read
     console.log(`   ${GREY}Press any key to return to the main menu...${RESET}`);
-    await new Promise<void>((resolve) => {
+    await new Promise((resolve) => {
       process.stdin.setRawMode(true);
       process.stdin.resume();
       process.stdin.once("data", () => {
@@ -396,7 +395,7 @@ This project demonstrates the reactive elegant-store using a gorgeous interactiv
         resolve();
       });
     });
-  } catch (error: any) {
+  } catch (error) {
     console.log(`   ${RED}✖ Failed to run installer: ${error.message}${RESET}`);
   }
 }
@@ -410,14 +409,14 @@ function runLocalDemo() {
       increment: (state) => ({ count: state.count + 1 }),
       decrement: (state) => ({ count: state.count - 1 }),
       reset: () => ({ count: 0 }),
-      set: (_state, val: number) => ({ count: val }),
+      set: (_state, val) => ({ count: val }),
     }
   );
 
-  const historyLogs: string[] = [];
+  const historyLogs = [];
   const PORT = 3000;
 
-  function logAction(message: string) {
+  function logAction(message) {
     const time = new Date().toTimeString().split(" ")[0];
     historyLogs.push(`[${time}] ${message}`);
     if (historyLogs.length > 5) {
@@ -536,7 +535,7 @@ function runLocalDemo() {
     process.stdin.setRawMode(true);
   }
 
-  const handleKey = (_str: string, key: any) => {
+  const handleKey = (_str, key) => {
     if (key && (key.ctrl && key.name === "c" || key.name === "q")) {
       process.stdout.write("\x1b[2J\x1b[H\x1b[?25h"); // Restore screen and show cursor
       server.close();

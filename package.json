@@ -1,6 +1,10 @@
 {
   "name": "elegant-store",
-  "version": "3.2.0",
+  "version": "3.2.1",
+  "files": [
+    "dist",
+    "bin/elegant-store.js"
+  ],
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -13,13 +17,13 @@
     }
   },
   "bin": {
-    "elegant-store": "./dist/cli.js"
+    "elegant-store": "./bin/elegant-store.js"
   },
   "scripts": {
     "build": "bunchee",
     "dev": "bunchee -w",
     "generate-code-txt": "tsx ./bin/generate-code-txt.ts",
-    "elegant-store-cli": "node ./dist/cli.js"
+    "elegant-store-cli": "node ./bin/elegant-store.js"
   },
   "repository": {
     "type": "git",
