@@ -16,14 +16,14 @@ npm install elegant-store
 import { createStore } from "elegant-store";
 
 // Define your store with an initial value and optional actions
-const useCounterStore = createStore(0, {
+const counterStore = createStore(0, {
   increment: (state) => state + 1,
   decrement: (state) => state - 1,
   reset: () => 0,
 });
 
 function Counter() {
-  const { state: count, setState: setCount, increment, decrement, reset } = useCounterStore();
+  const { state: count, setState: setCount, increment, decrement, reset } = counterStore.useStore();
 
   return (
     <div>
@@ -48,11 +48,11 @@ The library now uses `useSyncExternalStore` under the hood. This eliminates tear
 If your state is a large object, you can pass a selector function to the hook to only re-render when a specific part of the state changes.
 
 ```ts
-const useUserStore = createStore({ name: "Alice", age: 30 });
+const userStore = createStore({ name: "Alice", age: 30 });
 
 function UserProfile() {
   // Component will only re-render if `name` changes. Changes to `age` are ignored.
-  const { state: name } = useUserStore((state) => state.name);
+  const { state: name } = userStore.useStore((state) => state.name);
 
   return <div>Name: {name}</div>;
 }
@@ -62,7 +62,7 @@ function UserProfile() {
 Actions can now be asynchronous! Just return a Promise, and the state will be updated when the Promise resolves.
 
 ```ts
-const useAuthStore = createStore({ user: null }, {
+const authStore = createStore({ user: null }, {
   login: async (state, credentials) => {
     const user = await api.login(credentials);
     return { ...state, user };
@@ -74,13 +74,13 @@ const useAuthStore = createStore({ user: null }, {
 You can now read, update, or subscribe to the state outside of React components—perfect for utility files, API callers, or Router guards.
 
 ```ts
-const useTokenStore = createStore({ token: null });
+const tokenStore = createStore({ token: null });
 
 // Outside React
-const currentToken = useTokenStore.getState().token;
-useTokenStore.setState({ token: "new_token" });
-useTokenStore.actions.myAction();
-useTokenStore.subscribe((newState) => console.log(newState));
+const currentToken = tokenStore.get().token;
+tokenStore.setState({ token: "new_token" });
+tokenStore.actions.myAction();
+tokenStore.subscribe((newState) => console.log(newState));
 ```
 
 ## API
@@ -95,16 +95,12 @@ Creates a new store.
 - `listeners?: ((t: T) => void)[]`: An optional array of callbacks called with the new state value whenever the state changes.
 
 **Returns:**
-A hybrid hook and store object:
-
-When used as a hook:
-`useStore(selector?)` returns `{ state: selectedValue, setState: setValue, ...boundActions }`
-
-When used as an object:
-- `useStore.getState()`: Returns current state.
-- `useStore.setState(newState)`: Updates current state.
-- `useStore.actions`: Your bound actions.
-- `useStore.subscribe(listener)`: Subscribe to state changes.
+An object containing:
+- `useStore(selector?)`: A hook returning `{ state: selectedValue, setState: setValue, ...boundActions }`
+- `get()` / `getState()`: Returns current state.
+- `setState(newState)`: Updates current state.
+- `actions`: Your bound actions.
+- `subscribe(listener)`: Subscribe to state changes.
 
 ## AI Agent Instructions
 Are you using an AI assistant like Cursor, Claude, or GitHub Copilot? We've created a dedicated markdown file specifically optimized for AI consumption. Feed `docs/llms.md` to your agent to ensure it generates perfect `elegant-store` code with selectors, async actions, and outside-React state access.

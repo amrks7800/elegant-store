@@ -30,8 +30,7 @@ const createSubscribable = ()=>{
  *
  * @param initialValue - The initial value of the store.
  * @param actions - An optional object containing action creators. Each action creator takes the current state and returns a new state or a Promise.
- *
- * @returns A hook function that returns an object containing the current state, the updater function, and the destructured bound action creators.
+ * @returns An object containing the `useStore` hook, the `get` and `getState` functions, the `setState` function, bound actions, and subscribe method.
  **/ function createStore(initialValue, actions, listeners) {
     const subscribable = createSubscribable();
     let currentValue = initialValue;
@@ -68,11 +67,14 @@ const createSubscribable = ()=>{
             ...boundActions
         };
     }
-    useStore.getState = getState;
-    useStore.setState = setState;
-    useStore.actions = boundActions;
-    useStore.subscribe = subscribable.subscribe;
-    return useStore;
+    return {
+        useStore,
+        get: getState,
+        getState,
+        setState,
+        actions: boundActions,
+        subscribe: subscribable.subscribe
+    };
 }
 
 export { createStore };

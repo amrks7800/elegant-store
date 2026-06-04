@@ -1,6 +1,6 @@
 {
   "name": "elegant-store",
-  "version": "3.2.6",
+  "version": "3.2.7",
   "files": [
     "dist",
     "bin/elegant-store.js"
@@ -43,6 +43,5 @@
     "typescript": "^5.7.3",
     "@types/node": "^25.8.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

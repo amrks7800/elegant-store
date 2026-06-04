@@ -13,20 +13,22 @@ type Action<T> = Dispatch<SetStateAction<T>>;
  *
  * @param initialValue - The initial value of the store.
  * @param actions - An optional object containing action creators. Each action creator takes the current state and returns a new state or a Promise.
- *
- * @returns A hook function that returns an object containing the current state, the updater function, and the destructured bound action creators.
+ * @returns An object containing the `useStore` hook, the `get` and `getState` functions, the `setState` function, bound actions, and subscribe method.
  **/
 declare function createStore<T, S extends {
     [key: string]: (t: T, ...args: any[]) => T | Promise<T>;
 }, L extends ((t: T) => void)[]>(initialValue: T, actions?: S, listeners?: L): {
-    (): {
-        state: T;
-        setState: Action<T>;
-    } & { [K in keyof S]: S[K] extends (t: T, ...args: infer P) => infer R ? (...args: P) => R extends Promise<any> ? Promise<void> : void : never; };
-    <R>(selector: (state: T) => R): {
-        state: R;
-        setState: Action<T>;
-    } & { [K in keyof S]: S[K] extends (t: T, ...args: infer P) => infer R_1 ? (...args: P) => R_1 extends Promise<any> ? Promise<void> : void : never; };
+    useStore: {
+        (): {
+            state: T;
+            setState: Action<T>;
+        } & { [K in keyof S]: S[K] extends (t: T, ...args: infer P) => infer R ? (...args: P) => R extends Promise<any> ? Promise<void> : void : never; };
+        <R>(selector: (state: T) => R): {
+            state: R;
+            setState: Action<T>;
+        } & { [K in keyof S]: S[K] extends (t: T, ...args: infer P) => infer R_1 ? (...args: P) => R_1 extends Promise<any> ? Promise<void> : void : never; };
+    };
+    get: () => T;
     getState: () => T;
     setState: (newValue: T | ((prev: T) => T)) => void;
     actions: { [K in keyof S]: S[K] extends (t: T, ...args: infer P) => infer R ? (...args: P) => R extends Promise<any> ? Promise<void> : void : never; };

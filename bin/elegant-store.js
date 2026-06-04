@@ -211,11 +211,10 @@ async function setupAndInstall() {
     console.log(`   ${GREEN}\u2714 Created demo store at:${RESET} ${CYAN}./${relativeStorePath}${RESET}\n`);
 
     console.log(`   ${WHITE}\u{1F680} How to use your store in React:${RESET}`);
-    console.log(`     ${GOLD}1. Import the hook and your store:${RESET}`);
-    console.log(`        ${GREY}import { useStore } from "elegant-store";${RESET}`);
+    console.log(`     ${GOLD}1. Import your store:${RESET}`);
     console.log(`        ${GREY}import { counterStore } from "${importPath}";${RESET}\n`);
-    console.log(`     ${GOLD}2. Bind inside your component:${RESET}`);
-    console.log(`        ${GREY}const { state, increment, decrement } = useStore(counterStore);${RESET}\n`);
+    console.log(`     ${GOLD}2. Call the useStore hook on it inside your component:${RESET}`);
+    console.log(`        ${GREY}const { state, increment, decrement } = counterStore.useStore();${RESET}\n`);
     console.log(`     ${GOLD}3. Render state and trigger actions:${RESET}`);
     console.log(`        ${GREY}<button onClick={increment}>Count: {state.count}</button>${RESET}\n`);
     console.log(`   ${GREEN}\u2728 You're all set! Start building elegant state machines! \u2728${RESET}\n`);
